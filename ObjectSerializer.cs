@@ -8,9 +8,6 @@ namespace JSONSerializer
 {
     public static partial class Serializer
     {
-        public static string Serialize(object obj)
-        {
-            return "object";
-        }
+
     }
 }
