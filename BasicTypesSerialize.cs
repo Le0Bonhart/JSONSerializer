@@ -20,6 +20,22 @@ namespace JSONSerializer
             return serialized;
         }
 
+        public static string Serialize(Dictionary<string, object> dict)
+        {
+            string serialized = "{";
+            foreach (string key in dict.Keys)
+            {
+                dynamic item = dict[key];
+                serialized = $"{serialized} \"{key}\" : {Serialize(item)}, ";
+                //serialized = $"{serialized} \"{key}\" : {Serialize(dict[key])}, ";
+            }
+
+            serialized = serialized.Remove(serialized.Length-2);
+
+            serialized += "}";
+            return serialized;
+        }
+
         public static string Serialize(string str) { return $"\"{str}\""; }
 
         public static string Serialize(ValueType value)
