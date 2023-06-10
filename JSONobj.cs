@@ -6,15 +6,10 @@ using System.Threading.Tasks;
 
 namespace JSONSerializer
 {
-    public class JSONobj
+    public class jsonObj
     {
-        Dictionary<string, object> _data = new Dictionary<string, object>();
-
-        public JSONobj() { }
-
-        public void PushField(string field, object obj)
-        {
-            _data.Add(field, obj);
-        }
+        public Dictionary<string, object> _data = new Dictionary<string, object>();
+        public Dictionary<string, object> Data { get { return _data; } }
+        public jsonObj() { }
     }
 }
