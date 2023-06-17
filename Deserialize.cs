@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -30,9 +31,9 @@ namespace JSONSerializer
             return sb.ToString();
         }
 
-        public static jsonObj DeserializeObj(string json)
+        public static JsonObj DeserializeObj(string json)
         {
-            jsonObj obj = new jsonObj();
+            JsonObj obj = new JsonObj();
             if (!json.Contains('\"')) return obj;
             json = DeserealizerFormat(json);
             int LPointer = json.IndexOf('\"', 0);
@@ -40,23 +41,60 @@ namespace JSONSerializer
             int RPointer = json.Contains(';') ? json.IndexOf(';', MPointer + 1) : json.IndexOf('}');
             while (true)
             {
-                obj._data.Add((string)Deserialize(json.Substring(LPointer, MPointer - LPointer)), Deserialize(json.Substring(MPointer + 1, RPointer - MPointer - 1)));
-                if (RPointer == json.IndexOf('}')) break;
+                obj.Data.Add((string)Deserialize(json.Substring(LPointer, MPointer - LPointer)), Deserialize(json.Substring(MPointer + 1, RPointer - MPointer - 1)));
+                if (RPointer == json.LastIndexOf('}')) break;
                 LPointer = json.IndexOf('\"', RPointer);
                 MPointer = json.IndexOf(":", LPointer);
-                RPointer = RPointer == json.LastIndexOf(';') ? json.IndexOf('}') : json.IndexOf(';', MPointer);
+                if (json[MPointer + 1] == '{') RPointer = Closer(json, MPointer + 1) + 1;
+                else if (json[MPointer + 1] == '[') RPointer = Closer(json, MPointer + 1) + 1;
+                else RPointer = RPointer == json.LastIndexOf(';') ? json.LastIndexOf('}') : json.IndexOf(';', MPointer);
             }
             return obj;
         }
 
-        public static object Deserialize(string json)
+        public static ArrayList DeserializeArray(string json)
         {
-            if (json[0] == '{') return DeserializeObj(json);
-            if (json[0] == '\"') return json.Substring(1, json.Length - 2);
-            if (json[0] == 'n') return null;
-            if (json[0] == 't') return true;
-            if (json[0] == 'f') return false;
-            return double.Parse(json, System.Globalization.CultureInfo.InvariantCulture);
+            ArrayList list = new ArrayList();
+            json = DeserealizerFormat(json);
+            int LPointer = 0;
+            int RPointer = json.IndexOf(';');
+            while (true)
+            {
+                list.Add(Deserialize(json.Substring(LPointer + 1, RPointer - LPointer - 1)));
+                if (RPointer == json.LastIndexOf(']')) break;
+                LPointer = json.IndexOf(";", RPointer);
+                if (json[LPointer + 1] == '[') RPointer = Closer(json, LPointer + 1);
+                else RPointer = RPointer == json.LastIndexOf(';') ? json.IndexOf(']') : json.IndexOf(';', LPointer + 1);
+            }
+            return list;
+        }
+
+        public static dynamic? Deserialize(string json)
+        {
+            return json[0] switch
+            {
+                ('{') => DeserializeObj(json),
+                ('\"') => json.Substring(1, json.Length - 2),
+                ('[') => DeserializeArray(json),
+                ('n') => null,
+                ('t') => true,
+                ('f') => false,
+                _ => double.Parse(json, System.Globalization.CultureInfo.InvariantCulture),
+            };
+        }
+
+        static int Closer(string str, int ind)
+        {
+            char bracket = str[ind];
+            char want = bracket == '{' ? '}' : ']';
+            int counter = 1;
+
+            for (int i = ind + 1; ;i++)
+            {
+                if (str[i] == bracket) counter++;
+                else if (str[i] == want) counter--;
+                if (counter == 0) return i;
+            }
         }
     }
 }

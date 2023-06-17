@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace JSONSerializer
 {
-    public class jsonObj
+    public class JsonObj
     {
-        public Dictionary<string, object> _data = new Dictionary<string, object>();
+        Dictionary<string, object> _data = new Dictionary<string, object>();
         public Dictionary<string, object> Data { get { return _data; } }
-        public jsonObj() { }
+        public JsonObj() { }
     }
 }
